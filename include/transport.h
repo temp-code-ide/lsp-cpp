@@ -50,12 +50,14 @@ public:
         m_requests.emplace_back(id, std::move(func));
     }
     void onNotify(string_ref method, value &params) override {
+        std::cout << "onNotify: method = " << method << ", params = " << params.dump() << std::endl;
         std::string str = method.str();
         if (m_notify.count(str)) {
             m_notify[str](params);
         }
     }
     void onResponse(value &ID, value &result) override {
+        std::cout << "OnResponse, id = " << ID.dump() << ", result =" << result.dump() << std::endl;
         for (int i = 0; i < m_requests.size(); ++i) {
             if (ID == m_requests[i].first) {
                 m_requests[i].second(result);
@@ -65,9 +67,10 @@ public:
         }
     }
     void onError(value &ID, value &error) override {
-
+        std::cout << "onError, id = " << ID.dump() << ", result =" << error.dump() << std::endl;
     }
     void onRequest(string_ref method, value &params, value &ID) override {
+        std::cout << "onNotify: method = " << method << ", params = " << params.dump() << ", id = "<< ID.dump() << std::endl;
         std::string string = method.str();
         if (m_calls.count(string)) {
             m_calls[string](params, ID);
@@ -85,7 +88,10 @@ public:
 class JsonTransport : public Transport {
 public:
     const char *jsonrpc = "2.0";
+    MapMessageHandler* m_handler;
+    
     int loop(MessageHandler &handler) override {
+        m_handler = dynamic_cast<MapMessageHandler*>(&handler);
         while (true) {
             try {
                 value value;
@@ -115,6 +121,7 @@ public:
         json value = {{"jsonrpc", jsonrpc},
                       {"method",  method},
                       {"params",  params}};
+        std::cout << "[c->s:notify]: " << std::endl << value.dump() << std::endl << std::endl;
         writeJson(value);
     }
     void request(string_ref method, value &params, RequestID &id) override {
@@ -122,6 +129,7 @@ public:
                     {"id",      id},
                     {"method",  method},
                     {"params",  params}};
+        std::cout << "[c->s:request]: "<< std::endl << rpc.dump() << std::endl << std::endl;
         writeJson(rpc);
     }
     virtual bool readJson(value &) = 0;

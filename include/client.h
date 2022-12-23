@@ -4,9 +4,9 @@
 
 #ifndef LSP_CLIENT_H
 #define LSP_CLIENT_H
+#include "windows.h"
 #include "transport.h"
 #include "protocol.h"
-#include "windows.h"
 class LanguageClient : public JsonTransport {
 public:
     virtual ~LanguageClient() = default;
@@ -15,6 +15,7 @@ public:
         InitializeParams params;
         params.processId = GetCurrentProcessId();
         params.rootUri = rootUri;
+        params.rootPath = rootUri;
         return SendRequest("initialize", params);
     }
     RequestID Shutdown() {
@@ -68,7 +69,7 @@ public:
         params.textDocument.uri = std::move(uri);
         params.positions = std::move(positions);
         return SendRequest("textDocument/selectionRange", params);
-    }
+    } 
     RequestID OnTypeFormatting(DocumentUri uri, Position position, string_ref ch) {
         DocumentOnTypeFormattingParams params;
         params.textDocument.uri = std::move(uri);
@@ -189,6 +190,7 @@ public:
         params.settings = std::move(settings);
         return SendRequest("workspace/didChangeConfiguration", std::move(params));
     }
+
 public:
     RequestID SendRequest(string_ref method, value params = json()) {
         RequestID id = method.str();
@@ -301,15 +303,14 @@ public:
         try {
             json = json::parse(read);
         } catch (std::exception &e) {
-            //printf("read error -> %s\nread -> %s\n ", e.what(), read.c_str());
+            printf("read error -> %s\nread -> %s\n ", e.what(), read.c_str());
         }
-        //printf("message %d:\n%s\n", length, read.c_str());
+        std::cout << "[s->c] : " << json.dump() << std::endl << std::endl;
         return true;
     }
     bool writeJson(json &json) override {
         std::string content = json.dump();
         std::string header = "Content-Length: " + std::to_string(content.length()) + "\r\n\r\n" + content;
-        //printf("send:\n%s\n", content.c_str());
         return Write(header);
     }
 };

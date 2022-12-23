@@ -743,6 +743,7 @@ JSON_SERIALIZE(ExecuteCommandParams, MAP_JSON(MAP_KEY(command), MAP_KEY(workspac
 struct LspCommand : public ExecuteCommandParams {
     std::string title;
 };
+
 JSON_SERIALIZE(LspCommand, MAP_JSON(MAP_KEY(command), MAP_KEY(workspaceEdit), MAP_KEY(tweakArgs), MAP_KEY(title)),
         {FROM_KEY(command);FROM_KEY(workspaceEdit);FROM_KEY(tweakArgs);FROM_KEY(title);});
 
@@ -765,6 +766,36 @@ struct CodeAction {
 };
 JSON_SERIALIZE(CodeAction, MAP_JSON(MAP_KEY(title), MAP_KEY(kind), MAP_KEY(diagnostics), MAP_KEY(edit), MAP_KEY(command)),
         {FROM_KEY(title);FROM_KEY(kind);FROM_KEY(diagnostics);FROM_KEY(edit);FROM_KEY(command)});
+
+struct DocumentSymbol {
+    /// The name of this symbol.
+    std::string name;
+
+    /// More detail for this symbol, e.g the signature of a function.
+    std::string detail;
+
+    /// The kind of this symbol.
+    SymbolKind kind;
+
+    /// Indicates if this symbol is deprecated.
+    bool deprecated = false;
+
+    /// The range enclosing this symbol not including leading/trailing whitespace
+    /// but everything else like comments. This information is typically used to
+    /// determine if the clients cursor is inside the symbol to reveal in the
+    /// symbol in the UI.
+    Range range;
+
+    /// The range that should be selected and revealed when this symbol is being
+    /// picked, e.g the name of a function. Must be contained by the `range`.
+    Range selectionRange;
+
+    /// Children of this symbol, e.g. properties of a class.
+    std::vector<DocumentSymbol> children;
+};
+
+JSON_SERIALIZE(DocumentSymbol, MAP_JSON(MAP_KEY(name), MAP_KEY(detail), MAP_KEY(deprecated), MAP_KEY(range), MAP_KEY(selectionRange), MAP_KEY(children)),
+    { FROM_KEY(name); FROM_KEY(detail); FROM_KEY(deprecated); FROM_KEY(range); FROM_KEY(selectionRange); FROM_KEY(children)});
 
 struct SymbolInformation {
     /// The name of this symbol.
