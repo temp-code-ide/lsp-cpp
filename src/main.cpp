@@ -114,7 +114,6 @@ int main() {
                 }
 
             });
-
         }
         else if (res == 9)
         {
@@ -133,9 +132,40 @@ int main() {
             my.bindResponse(id, [&](value& v)->void {
                 writeFile(jsonFile, v.dump());
             });
-
-
         }
+        else if (res == 11)
+        {
+            Position p;
+            p.line = 19;
+            p.character = 7;
+
+            RequestID id = client.Hover(file, p);
+            my.bindResponse(id, [&](value& v)->void {
+                writeFile(jsonFile, v.dump());
+                });
+        }
+        else if (res == 12)
+        {
+            Position p;
+            p.line = 21;
+            p.character = 17;
+
+            RequestID id = client.Rename(file, p, "lisi");
+            my.bindResponse(id, [&](value& v)->void {
+                writeFile(jsonFile, v.dump());
+                });
+        }
+        else if (res == 13)
+        {
+            Position p;
+            p.line = 21;
+            p.character = 7;
+            RequestID id = client.TypeHierarchy(file, p, TypeHierarchyDirection::Both, 0);
+            my.bindResponse(id, [&](value& v)->void {
+                writeFile(jsonFile, v.dump());
+                });
+        }
+
     }
     return 0;
 }
