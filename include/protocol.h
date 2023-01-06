@@ -910,7 +910,7 @@ struct CompletionItem {
     std::string detail;
 
     /// A human-readable string that represents a doc-comment.
-    std::string documentation;
+    option<MarkupContent> documentation;
 
     /// A string that should be used when comparing this item with other items.
     /// When `falsy` the label is used.
@@ -1114,11 +1114,16 @@ struct TypeHierarchyItem {
     /// need this (the item itself is sufficient to identify what to resolve)
     /// so don't declare it.
 };
+struct ReferenceContext {
+    bool includeDeclaration;
+};
+JSON_SERIALIZE(ReferenceContext, MAP_JSON(MAP_KEY(includeDeclaration)), {});
 
 struct ReferenceParams : public TextDocumentPositionParams {
     // For now, no options like context.includeDeclaration are supported.
+    ReferenceContext context;
 };
-JSON_SERIALIZE(ReferenceParams, MAP_JSON(MAP_KEY(textDocument), MAP_KEY(position)), {});
+JSON_SERIALIZE(ReferenceParams, MAP_JSON(MAP_KEY(textDocument), MAP_KEY(position), MAP_KEY(context)), {});
 struct FileStatus {
     /// The text document's URI.
     DocumentUri uri;

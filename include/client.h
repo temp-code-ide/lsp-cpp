@@ -118,6 +118,7 @@ public:
         ReferenceParams params;
         params.textDocument.uri = std::move(uri);
         params.position = position;
+        params.context.includeDeclaration = true;
         return SendRequest("textDocument/references", std::move(params));
     }
     RequestID SwitchSourceHeader(DocumentUri uri) {

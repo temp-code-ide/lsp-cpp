@@ -1,10 +1,14 @@
-#include <iostream>
+﻿#include <iostream>
 #include <thread>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <list>
 #include "client.h"
+#include <stdio.h>
+#include "json.hpp";
+using json = nlohmann::json;
+
 
 std::string readFile(std::string file)
 {
@@ -24,10 +28,12 @@ void writeFile(const std::string &file, std::string text)
     ofs.close();   
 }
 
-//{"id":"textDocument/documentSymbol", "jsonrpc" : "2.0", "result" : [{"children": [{"detail":"void ()", "kind" : 6, "name" : "SayHello", "range" : {"end":{"character":22, "line" : 8}, "start" : {"character":4, "line" : 8}}, "selectionRange" : {"end":{"character":17, "line" : 8}, "start" : {"character":9, "line" : 8}}}, { "detail":"std::string","kind" : 8,"name" : "name","range" : {"end":{"character":20,"line" : 10},"start" : {"character":4,"line" : 10}},"selectionRange" : {"end":{"character":20,"line" : 10},"start" : {"character":16,"line" : 10}} }, { "detail":"int","kind" : 8,"name" : "age","range" : {"end":{"character":11,"line" : 11},"start" : {"character":4,"line" : 11}},"selectionRange" : {"end":{"character":11,"line" : 11},"start" : {"character":8,"line" : 11}} }, { "detail":"bool","kind" : 8,"name" : "sex","range" : {"end":{"character":12,"line" : 12},"start" : {"character":4,"line" : 12}},"selectionRange" : {"end":{"character":12,"line" : 12},"start" : {"character":9,"line" : 12}} }] , "detail" : "class", "kind" : 5, "name" : "CStudent", "range" : {"end":{"character":1, "line" : 13}, "start" : {"character":0, "line" : 5}}, "selectionRange" : {"end":{"character":14, "line" : 5}, "start" : {"character":6, "line" : 5}}}, { "detail":"void ()","kind" : 12,"name" : "test","range" : {"end":{"character":1,"line" : 16},"start" : {"character":0,"line" : 14}},"selectionRange" : {"end":{"character":9,"line" : 14},"start" : {"character":5,"line" : 14}} }, { "detail":"int ()","kind" : 12,"name" : "main","range" : {"end":{"character":1,"line" : 30},"start" : {"character":0,"line" : 17}},"selectionRange" : {"end":{"character":8,"line" : 17},"start" : {"character":4,"line" : 17}} }] }
-
 int main() {
-       
+    
+    std::ifstream f("d:/hello_test/lsp.json");
+    json data = json::parse(f);
+    std::vector<CompletionItem> vec = data["items"].get<std::vector<CompletionItem>>();
+
     ProcessLanguageClient client("D:\\clangd.exe");
     MapMessageHandler my;
     std::thread thread([&] {
@@ -124,12 +130,13 @@ int main() {
         {
             CompletionContext ctx;
             Position p;
-            p.line = 20;
-            p.character = 7;
-            ctx.triggerCharacter = "say";
+            p.line = 23;
+            p.character = 6;
+            ctx.triggerCharacter = "he";
 
             RequestID id = client.Completion(file, p, ctx);
             my.bindResponse(id, [&](value& v)->void {
+                std::vector<CompletionItem> vec = v["items"].get<std::vector<CompletionItem>>();
                 writeFile(jsonFile, v.dump());
             });
         }
@@ -156,6 +163,17 @@ int main() {
                 });
         }
         else if (res == 13)
+        {
+            Position p;
+            p.line = 19;
+            p.character = 7;
+
+            RequestID id = client.References(file, p);
+            my.bindResponse(id, [&](value& v)->void {
+                writeFile(jsonFile, v.dump());
+                });
+        }
+        else if (res == 14)
         {
             Position p;
             p.line = 21;

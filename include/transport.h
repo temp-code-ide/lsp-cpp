@@ -112,7 +112,7 @@ public:
                 }
             } catch (std::exception &e) {
 
-                //printf("error -> %s\n", e.what());
+                printf("error -> %s\n", e.what());
             }
         }
         return 0;
